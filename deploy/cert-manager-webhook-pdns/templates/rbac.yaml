@@ -11,8 +11,8 @@ metadata:
 # Grant the webhook permission to read the ConfigMap containing the Kubernetes
 # apiserver's requestheader-ca-certificate.
 # This ConfigMap is automatically created by the Kubernetes apiserver.
-apiVersion: rbac.authorization.k8s.io/v1beta1
-kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
 metadata:
   name: {{ include "cert-manager-webhook-pdns.fullname" . }}
   labels:
@@ -22,7 +22,7 @@ metadata:
     heritage: {{ .Release.Service }}
 roleRef:
   apiGroup: rbac.authorization.k8s.io
-  kind: Role
+  kind: ClusterRole
   name: {{ include "cert-manager-webhook-pdns.fullname" . }}
 subjects:
   - apiGroup: ""
@@ -31,8 +31,8 @@ subjects:
     namespace: {{ .Release.Namespace }}
 ---
 # Grant cert-manager permission to validate using our apiserver
-apiVersion: rbac.authorization.k8s.io/v1beta1
-kind: Role
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
 metadata:
   name: {{ include "cert-manager-webhook-pdns.fullname" . }}
   labels:
@@ -47,11 +47,19 @@ rules:
       - 'secrets'
     verbs:
       - 'get'
+  - apiGroups:
+      - 'flowcontrol.apiserver.k8s.io'
+    resources:
+      - 'flowschemas'
+      - 'prioritylevelconfigurations'
+    verbs:
+      - 'watch'
+      - 'list'
 ---
 # Grant the webhook permission to read the ConfigMap containing the Kubernetes
 # apiserver's requestheader-ca-certificate.
 # This ConfigMap is automatically created by the Kubernetes apiserver.
-apiVersion: rbac.authorization.k8s.io/v1beta1
+apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
   name: {{ include "cert-manager-webhook-pdns.fullname" . }}:webhook-authentication-reader
@@ -73,7 +81,7 @@ subjects:
 ---
 # apiserver gets the auth-delegator role to delegate auth decisions to
 # the core apiserver
-apiVersion: rbac.authorization.k8s.io/v1beta1
+apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
   name: {{ include "cert-manager-webhook-pdns.fullname" . }}:auth-delegator
@@ -93,7 +101,7 @@ subjects:
     namespace: {{ .Release.Namespace }}
 ---
 # Grant cert-manager permission to validate using our apiserver
-apiVersion: rbac.authorization.k8s.io/v1beta1
+apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
   name: {{ include "cert-manager-webhook-pdns.fullname" . }}:domain-solver
@@ -110,7 +118,7 @@ rules:
     verbs:
       - 'create'
 ---
-apiVersion: rbac.authorization.k8s.io/v1beta1
+apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
   name: {{ include "cert-manager-webhook-pdns.fullname" . }}:domain-solver
